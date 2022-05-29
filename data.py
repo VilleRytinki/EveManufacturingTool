@@ -1,8 +1,8 @@
 import requests
+import numpy as np
 
 
-
-def get_data_from_esi(address_str):
+def get_data_from_api(address_str):
     """
     Gets data from an HTTP(S) endpoint.
 
@@ -35,13 +35,46 @@ def get_data_from_esi(address_str):
         raise ConnectionError('Something went wrong with the request.')
 
 
+def get_all_items_data():
+    """
+    Gets all item id numbers from ESI.
 
-'''Test code'''
-item_id_1 = 'https://esi.evetech.net/latest/universe/groups/?datasource=tranquility&page=1'
-item_id_2 = 'https://esi.evetech.net/latest/universe/groups/?datasource=tranquility&page=2'
+    Returns
+    -------
+        a list of item id numbers.
+    """
+    page_number = 1
+    item_data_endpoint_str = 'https://esi.evetech.net/dev/universe/types/?datasource=tranquility&page='
+    item_id_list = []
 
-data = get_data_from_esi(item_id_1)
+    while True:
+        try:
+            data = get_data_from_api(item_data_endpoint_str + str(page_number))
 
-print(type(data))
-print(type(data.json()))
-print(data.json())
+            if bool(data.json()):
+                item_id_list.extend(data.json())
+                page_number += 1
+            else:
+                break
+        except ConnectionError:
+            break
+
+    return item_id_list
+
+
+def load_item_id_to_csv(file_name):
+    """
+    Gets all the item id numbers and loads them to a csv file.
+
+    Parameters
+    ----------
+    file_name: str
+        file name to store item id's.
+    """
+    data_list = get_all_items_data()
+    data_list_np = np.array(data_list, dtype=int)
+
+    data_list_np.tofile(file_name + '.csv', sep=",", format='%s')
+
+
+load_item_id_to_csv('item_id')
