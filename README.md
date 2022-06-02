@@ -17,3 +17,6 @@ Based on how the ESI works, the idea of the workflow is:
 Current features:
   overhead calculation of a manufacturing process.
   gets data from ESI endpoints.
+  
+On consideration:
+ - Maybe need a way to determine value per m3 aswell? There is a value factor in volume as bigger items are harder to transport, so the more expensive items might not make the most amount of money per m3.
