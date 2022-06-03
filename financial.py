@@ -73,12 +73,12 @@ def determine_turnover_value(turnover):
         return 'Excellent turnover value.'
 
 
-MANUFACTURING_COST = 4500000
-ESTIMATED_SELLING_PRICE = 5000000
+MANUFACTURING_COST = 6000000
+ESTIMATED_SELLING_PRICE = 45000000
 
 turnover = calculate_turnover(MANUFACTURING_COST, ESTIMATED_SELLING_PRICE)
 
-print('Estimated overhead {} %'.format(turnover))
+print('Estimated turnover {} %'.format(turnover))
 
 print('The value of the overhead is: {}'.format(determine_turnover_value(turnover)))
 

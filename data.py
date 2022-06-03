@@ -1,10 +1,13 @@
+import contextlib
+
 import requests
 import numpy as np
 
 
-def get_data_from_api(address_str):
+@contextlib.contextmanager
+def request_http(address_str):
     """
-    Gets data from an HTTP(S) endpoint.
+    Context manager for getting data from an HTTP(S) endpoint.
 
     Parameters
     -----------
@@ -29,13 +32,13 @@ def get_data_from_api(address_str):
     response = requests.get(address_str)
 
     if response.status_code == 200:
-        return response
+        yield response
 
     else:
         raise ConnectionError('Something went wrong with the request.')
 
 
-def get_all_items_data():
+def get_all_items_id():
     """
     Gets all item id numbers from ESI.
 
@@ -49,20 +52,22 @@ def get_all_items_data():
 
     while True:
         try:
-            data = get_data_from_api(item_data_endpoint_str + str(page_number))
+            # data = get_data_from_api(item_data_endpoint_str + str(page_number))
 
-            if bool(data.json()):
-                item_id_list.extend(data.json())
-                page_number += 1
-            else:
-                break
+            '''use context manager to retrieve the data.'''
+            with request_http(item_data_endpoint_str + str(page_number)) as data:
+                if bool(data.json()):
+                    item_id_list.extend(data.json())
+                    page_number += 1
+                else:
+                    break
         except ConnectionError:
             break
 
     return item_id_list
 
 
-def load_item_id_to_csv(file_name):
+def load_list_to_csv(file_name, id_list):
     """
     Gets all the item id numbers and loads them to a csv file.
 
@@ -70,11 +75,20 @@ def load_item_id_to_csv(file_name):
     ----------
     file_name: str
         file name to store item id's.
+    id_list: list
+        list of item id's.
+
+    Notes
+    ----------
+    Uses numpy library to load list to a csv.
     """
-    data_list = get_all_items_data()
-    data_list_np = np.array(data_list, dtype=int)
+    data_list_np = np.array(id_list, dtype=int)
 
     data_list_np.tofile(file_name + '.csv', sep=",", format='%s')
 
+    print("A total of {} id's were written to {}.csv".format(len(data_list_np), file_name))
 
-load_item_id_to_csv('item_id')
+
+'''test code'''
+id_list = get_all_items_id()
+load_list_to_csv()('item_id', id_list)
