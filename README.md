@@ -1,5 +1,6 @@
 EveManufacturingTool
 
+The purpose of this project is to develop an app which i could use daily, and to train my Data Engineering skills.
 Tool for Eve Online to help with manufacturing process.
 This tool will use the ESI OpenAPI for EVE online.
 ESI documentation: https://esi.evetech.net/ui/
