@@ -1,8 +1,8 @@
 import contextlib
 
+import pandas as pd
 import requests
 import numpy as np
-
 
 
 @contextlib.contextmanager
@@ -53,7 +53,6 @@ def get_all_items_id():
 
     while True:
         try:
-            # data = get_data_from_api(item_data_endpoint_str + str(page_number))
 
             '''use context manager to retrieve the data.'''
             with request_http(item_data_endpoint_str + str(page_number)) as data:
@@ -92,7 +91,7 @@ def load_list_to_csv(file_name, id_list):
 
 def get_item_data(item_id):
     """
-
+    Requests the ESI API for item data.
     Parameters
     ----------
     item_id: int
@@ -130,16 +129,49 @@ def transform_item_data(item_data):
         index | market_group_id | name | volume | packaged_volume
 
     """
-    new_dict = {'market_group_id': 0, 'name': '', 'volume': 0,
-                'packaged_volume': 0}  # create a template for a new dict.
+    new_dict = {'type_id': 0, 'market_group_id': 0, 'name': '', 'volume': 0,
+                'packaged_volume': 0, 'average_price': 0}  # create a template for a new dict.
 
     '''insert the data value from the request to the appropriate key'''
+    new_dict['type_id'] = item_data['type_id']
     new_dict['market_group_id'] = item_data['market_group_id']
     new_dict['name'] = item_data['name']
     new_dict['volume'] = item_data['volume']
     new_dict['packaged_volume'] = item_data['packaged_volume']
 
     return new_dict
+
+
+def get_market_prices():
+    """
+    Requests the ESI endpoint for market prices for each item in EVE Online.
+    Returns
+    -------
+    list:
+        The API data as a list.
+
+    """
+    with request_http('https://esi.evetech.net/latest/markets/prices/?datasource=tranquility') as data:
+        return data.json()
+
+
+def add_market_average_price(transformed_data, market_prices_df):
+    """
+    Adds market average price to the transformed data dictionary
+    Parameters
+    ----------
+    transformed_data:
+        the transformed data dictionary with the new modeling.
+    market_prices_df:
+        pandas dataframe containing the market prices by type id.
+
+    Notes
+    -------
+    This function modifies the transformed data dictionary directly.
+    """
+    for row_tuple in market_prices_df.itertuples():
+        if row_tuple.type_id == transformed_data['type_id']:
+            transformed_data['average_price'] = row_tuple.average_price
 
 
 '''test code'''
@@ -152,4 +184,14 @@ print(item_id)
 item_data = get_item_data(item_id)
 transformed_data = transform_item_data(item_data)
 
+market_prices = get_market_prices()
+print(type(market_prices))
+market_prices_df = pd.DataFrame(market_prices)
 
+
+
+print(transformed_data)
+
+add_market_average_price(transformed_data, market_prices_df)
+
+print(transformed_data)
